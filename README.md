@@ -1,5 +1,12 @@
 # sdb
-## A file handler designed to be used in databases
+## A spreadsheet manager in text files
+
+### Benefits
+
+* Much lighter than excel
+* It's much faster
+* File Portability
+* Security in case you are in a private environment with private files
 
 ### Dependencies
 
