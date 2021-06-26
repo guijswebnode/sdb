@@ -1,0 +1,330 @@
+#!/usr/bin/env bash
+
+# Author: Guilherme Rodrigues 
+# Contact: pitechoficial@gmail.com 
+# Purpose of the program: to be a database tool
+
+# variables that stores the parameters
+
+parameter1=$1
+parameter2="$2"
+parameter3="$3"
+parameter4="$4"
+parameter5="$5"
+parameter6="$6"
+parameter7="$7"
+parameter8="$8"
+parameter9="$9"
+
+# function that sets the parameters
+function parameters(){
+	case $parameter1 in
+		readfile) read_file ;;
+		insert) insert ;;
+		insert_writeln) insert_writeln ;;
+		reset) reset ;;
+		backup) backup ;;
+		help) help_ ;;
+		password-active) password_active ;;
+		password) new_password_check ;;
+		find) _find ;;
+		*) echo "Enter a valid parameter" ;;
+	esac
+}
+
+# function that displays the documentation
+function help_(){
+	echo "
+sdb 'option'
+
+Options:
+readfile 'file': Read and print file.
+insert 'text' 'file': Insert one text in one file.
+insert_writeln 'text' 'file': Does the same thing as the insert function only that it inserts on the same line as the existing content.
+reset 'file': Clear data files.
+backup 'file/folder': Backs up the file or folder.
+password: Change password.
+password-active 'true/false': Configures whether to make a database change when asking for a password.
+find 'What do you seek' 'file': Find one info in one file.
+help: Print Documentation."
+}
+
+# function that configures whether to request the password or not
+function password_active(){
+
+	password
+
+	function password_pass_pass(){
+		function password_active_pass_pass(){
+			read -p "do you want to disable the password question? (yes / no) " read_password_pass_confirm
+			function read_password_pass_confirm_yes(){
+				echo "password_pass=false" > ~/.sdb_pass_active
+			}
+			
+			function read_password_pass_confirm_no(){
+				echo ""
+			}
+			
+			case $read_password_pass_confirm in
+				yes) read_password_pass_confirm_yes ;;
+				no) read_password_pass_confirm_no ;;
+			esac
+		}
+		
+		function password_active_pass_false(){
+			read -p "do you want to active the password question? (yes / no) " read_password_pass_confirm
+			function read_password_pass_confirm_yes(){
+				echo "password_pass=true" > ~/.sdb_pass_active
+			}
+			
+			function read_password_pass_confirm_no(){
+				echo ""
+			}
+			
+			case $read_password_pass_confirm in
+				yes) read_password_pass_confirm_yes ;;
+				no) read_password_pass_confirm_no ;;
+			esac
+		}
+		password_active_pass=$(cat ~/.sdb_pass_active)
+		case $password_active_pass in
+			"password_pass=true") password_active_pass_pass ;;
+			"password_pass=false") password_active_pass_false ;;
+		esac
+	}
+	
+	function password_pass_err(){
+		read -p "Do you want to enable or disable the password question?(yes/no) " read_password_pass_err_confirm
+		
+		function read_password_pass_err_confirm_yes(){
+			touch ~/.sdb_pass_active.txt
+			echo "password_pass=true" > ~/.sdb_pass_active
+		}
+		
+		function read_password_pass_err_confirm_no(){
+			echo "password_pass=false" > ~/.sdb_pass_active
+		}
+		
+		case $read_password_pass_err_confirm in
+			yes) read_password_pass_err_confirm_yes ;;
+			no) read_password_pass_err_confirm_no ;;
+		esac
+	}
+	
+	password_active_pass=$(cat ~/.sdb_pass_active)
+	case $? in
+		0) password_pass_pass ;;
+		1) password_pass_err ;;
+	esac
+}
+
+# function that puts a new password 
+function new_password_check(){
+
+	function new_password(){
+		read -p "What's your new password: " password_read
+		touch ~/.sdb_pass.txt
+		echo "password='$password_read'" > ~/.sdb_pass.txt
+		echo "Your password was created successfully"
+	}
+
+	function exit_status_err(){
+		new_password
+	}
+	
+	function exit_status_pass(){
+		password
+		new_password
+	}
+
+	password=$(cat ~/.sdb_pass.txt)	
+	
+	case $? in
+		1) exit_status_err ;;
+		0) exit_status_pass ;;
+	esac
+}
+
+# function that prompts for the password
+
+function password(){
+
+# function that compares what the user typed with the real password
+	function check_password(){
+		password=$(cat ~/.sdb_pass.txt)
+		read -p "Password: " read_password
+		result_read_password="password='$read_password'"
+		case $result_read_password in
+			"$password") echo "" ;;
+			*) password ;;
+		esac
+	}
+	
+	# funcão que checa se a senha está configurada
+	function password_pass_pass(){
+		password=$(cat ~/.sdb_pass.txt)
+		case $? in
+			1) new_password_check ;;
+			0) check_password ;;
+		esac
+	}
+	
+	function password_pass_false(){
+		echo ""
+	}
+	
+	password_pass=$(cat ~/.sdb_pass_active)
+
+	# case that checks whether to ask for the password	
+
+	case $password_pass in
+		"password_pass=true") password_pass_pass ;;
+		"password_pass=false") password_pass_false ;;
+	esac
+	
+	function password_pass_pass(){
+		password=$(cat ~/.sdb_pass.txt)
+		case $? in
+			1) new_password_check ;;
+			0) check_password ;;
+		esac
+	}
+}
+
+# function that seeks information that the user wants
+function _find(){
+
+	password
+
+	case $parameter2 in
+		"") echo "Type what you seek"; exit ;;
+	esac
+
+	case $parameter3 in
+		"") echo "Enter the file path"; exit ;;
+	esac
+
+	grep "$parameter2" $parameter3
+}
+
+# function that backs up a file or folder
+function backup(){
+
+	password
+
+	function parameter2_backup_err(){
+		echo "Enter the file or folder path"
+		exit
+	}
+	
+	function parameter3_backup_err(){
+		echo "Enter the folder path"
+		exit 12
+	}
+	
+	case $parameter2 in
+		"") parameter2_backup_err ;;
+	esac
+
+	case $parameter3 in
+		"") parameter3_backup_err ;;
+	esac
+	
+	cp $parameter2 $parameter3
+	
+}
+
+# function that reads files
+function read_file(){
+
+	password
+
+	function parameter2_readfile_err(){
+		echo "Enter the file path"
+		exit 12
+	}
+
+	case $parameter2 in
+		"") parameter2_readfile_err ;;
+	esac
+
+	cat $parameter2
+}
+
+# function that inserts text with a line break
+function insert(){
+
+	password
+
+	function parameter2_insert_err(){
+		echo "Type what you want to insert"
+		exit 12
+	}
+
+	function parameter3_insert_err(){
+		echo "Enter the file path"
+		exit 12
+	}
+	
+	case $parameter2 in
+		"") parameter2_insert_err ;;
+	esac
+
+	case $parameter3 in
+		"") parameter3_insert_err ;;
+	esac
+
+	text=$(cat $parameter3)
+	printf "$text \n $parameter2" > $parameter3
+}
+
+# function that inserts the text
+function insert_writeln(){
+
+	password
+
+	function parameter2_insert_writeln_err(){
+		echo "Type what you want to insert"
+		exit 12
+	}
+
+	function parameter3_insert_writeln_err(){
+		echo "Enter the file path"
+		exit 12
+	}
+	
+	case $parameter2 in
+		"") parameter2_insert_writeln_err ;;
+	esac
+
+	case $parameter3 in
+		"") parameter3_insert_writeln_err ;;
+	esac
+
+	text=$(cat $parameter3)
+	printf "$text $parameter2" > $parameter3
+}
+
+# function that clears data from the file
+function reset(){
+
+	password
+
+	function parameter2_reset_err(){
+		echo "Enter the file path"
+		exit 12
+	}
+
+	case $parameter2 in
+		"") parameter2_reset_err ;;
+	esac
+	
+	read -p "Are you sure you want to delete the contents of this file? (yes/no) " confirmation
+	
+	case $confirmation in
+		"yes") clear > $parameter2 ;;
+		"no") exit 0 ;;
+	esac
+}
+
+parameters
