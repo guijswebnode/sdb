@@ -16,6 +16,8 @@ parameter7="$7"
 parameter8="$8"
 parameter9="$9"
 
+home=$HOME
+
 # function that sets the parameters
 function parameters(){
 	case $parameter1 in
@@ -125,6 +127,7 @@ function new_password_check(){
 		read -p "What's your new password: " password_read
 		touch ~/.sdb_pass.txt
 		echo "password='$password_read'" > ~/.sdb_pass.txt
+		sudo chmod 600 ~/.sdb_pass.txt
 		echo "Your password was created successfully"
 	}
 
@@ -137,7 +140,7 @@ function new_password_check(){
 		new_password
 	}
 
-	password=$(cat ~/.sdb_pass.txt)	
+	password=$(sudo cat $home/.sdb_pass.txt)
 	
 	case $? in
 		1) exit_status_err ;;
@@ -151,7 +154,7 @@ function password(){
 
 # function that compares what the user typed with the real password
 	function check_password(){
-		password=$(cat ~/.sdb_pass.txt)
+		password=$(sudo cat $home/.sdb_pass.txt)
 		read -p "Password: " read_password
 		result_read_password="password='$read_password'"
 		case $result_read_password in
@@ -162,7 +165,7 @@ function password(){
 	
 	# funcão que checa se a senha está configurada
 	function password_pass_pass(){
-		password=$(cat ~/.sdb_pass.txt)
+		password=$(sudo cat $home/.sdb_pass.txt)
 		case $? in
 			1) new_password_check ;;
 			0) check_password ;;
@@ -183,7 +186,7 @@ function password(){
 	esac
 	
 	function password_pass_pass(){
-		password=$(cat ~/.sdb_pass.txt)
+		password=$(sudo cat $home/.sdb_pass.txt)
 		case $? in
 			1) new_password_check ;;
 			0) check_password ;;
